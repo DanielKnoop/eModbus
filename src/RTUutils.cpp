@@ -54,9 +54,9 @@ uint16_t RTUutils::calcCRC(const uint8_t *data, uint16_t len) {
     0x40
   };
 
-  register uint8_t crcHi = 0xFF;
-  register uint8_t crcLo = 0xFF;
-  register uint8_t index;
+  uint8_t crcHi = 0xFF;
+  uint8_t crcLo = 0xFF;
+  uint8_t index;
 
   while (len--) {
     index = crcLo ^ *data++;
@@ -147,7 +147,7 @@ int RTUutils::UARTinit(HardwareSerial& serial, int thresholdBytes) {
       // Yes. get the current value and set ours instead
       rc = uart->conf1.rxfifo_full_thrhd;
       uart->conf1.rxfifo_full_thrhd = thresholdBytes;
-      LOG_D("Serial%u FIFO threshold set to %d (was %d)\n", thresholdBytes, rc);
+      LOG_D("Serial%u FIFO threshold set to %d (was %d)\n", uart_num, thresholdBytes, rc);
     } else {
       LOG_W("Unable to identify serial\n");
     }
@@ -235,9 +235,9 @@ ModbusMessage RTUutils::receive(HardwareSerial& serial, uint32_t timeout, unsign
   ModbusMessage rv;
 
   // Index into buffer
-  register uint16_t bufferPtr = 0;
+  uint16_t bufferPtr = 0;
   // Byte read
-  register int b; 
+  int b; 
 
   // State machine states, RTU mode
   enum STATES : uint8_t { WAIT_DATA = 0, IN_PACKET, DATA_READ, FINISHED };
@@ -245,7 +245,7 @@ ModbusMessage RTUutils::receive(HardwareSerial& serial, uint32_t timeout, unsign
   // State machine states, ASCII mode
   enum ASTATES : uint8_t { A_WAIT_DATA = 0, A_DATA, A_WAIT_LEAD_OUT, A_FINISHED };
 
-  register uint8_t state;
+  uint8_t state;
 
   // Timeout tracker
   unsigned long TimeOut = millis();

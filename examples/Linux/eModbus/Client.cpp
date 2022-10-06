@@ -41,7 +41,7 @@ int Client::connect(IPAddress ip, uint16_t p) {
   server.sin_family = AF_INET;
   char buf[16];
   snprintf(buf, 16, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
-  server.sin_addr.s_addr = uint32_t(ip);
+  server.sin_addr.s_addr = ::htonl(uint32_t(ip));
   server.sin_port = ::htons(p);
 
 // Try to connect
@@ -150,7 +150,10 @@ interrupted:
   if (r == 1) return x;
 // We may have been prevented to read
   if (r < 0 && errno == EINTR) goto interrupted;
+// A zero signals no data available
+  if (r == 0) return -1;
 // All else is some error state
+// Lazyness... No error handling here!
   return r;
 }
 
@@ -244,14 +247,14 @@ IPAddress Client::hostname_to_ip(const char *hostname)
   // loop through all the results and connect to the first we can
   for (p = servinfo; p != NULL; p = p->ai_next) {
     h = (struct sockaddr_in *)p->ai_addr;
-    returnIP = h->sin_addr.s_addr;
+    returnIP = ::htonl(h->sin_addr.s_addr);
     if (returnIP != NIL_ADDR) break;
   }
   // Release allocated memory
   freeaddrinfo(servinfo);
 
   if (returnIP != NIL_ADDR) {
-    LOG_D("Host '%s'=%s\n", hostname, string(returnIP));
+    LOG_D("Host '%s'=%s\n", hostname, string(returnIP).c_str());
   } else {
     LOG_D("No IP for '%s' found\n", hostname);
   }
